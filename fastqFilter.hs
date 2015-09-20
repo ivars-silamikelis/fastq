@@ -1,8 +1,9 @@
 import System.Environment
 import qualified Data.ByteString.Char8 as C
 import Data.Attoparsec.ByteString.Char8
+--import Data.Attoparsec.ByteString.Lazy
 import qualified Data.Set as S
-import Test.QuickCheck
+--import Test.QuickCheck
 import Control.Applicative
 data Settings = Settings { db :: String}
 
@@ -11,14 +12,14 @@ data Fastq = Fastq {
                      dna :: C.ByteString,
                      qual :: C.ByteString
                    } deriving (Show, Eq)
-
+{-
 instance Arbitrary C.ByteString where
     arbitrary = C.pack <$> arbitrary
     shrink xs = C.pack <$> shrink (C.unpack xs)
 
 instance Arbitrary Fastq where
     arbitrary = Fastq <$> arbitrary <*> arbitrary <*> arbitrary
- 
+ -}
 nl :: Parser Char
 nl = satisfy (== '\n')
 
@@ -51,11 +52,15 @@ parseris contents =
 --quickChecked
 filterById :: [C.ByteString] -> [Fastq] -> [Fastq]
 filterById _ [] = []
-filterById db (el:els)
+filterById [] _ = []
+filterById (d:db) (el:els)
+    | (idField el) == d = el : (filterById db els)
+    | otherwise = (filterById (d:db) els)
+{-
     | (idField el) `S.member` dataBase = el : (filterById db els)
     | otherwise = filterById db els
     where dataBase = S.fromList db
-
+-}
 fastqPrinter :: Fastq -> IO ()
 fastqPrinter x = do
     putStr "@"
